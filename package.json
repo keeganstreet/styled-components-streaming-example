@@ -4,6 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "build": "webpack",
+    "watch": "webpack --watch",
+    "start": "nodemon dist/server --watch dist"
   },
   "author": "",
   "license": "ISC",

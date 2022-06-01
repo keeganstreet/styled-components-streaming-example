@@ -1,31 +1,17 @@
-import { Box } from "./Box";
-import { Circle } from "./Circle";
+import { Suspense, lazy } from "react";
+import Html from "./Html";
+import Counter from "./Counter";
+const Comments = lazy(() => import("./Comments" /* webpackPrefetch: true */));
 
 export const App = () => (
-  <>
-    <p>
-      This page is streamed with ServerStyleSheet.interleaveWithNodeStream and
-      ReactDOM.renderToNodeStream.
-    </p>
-    <p>
-      The following circles are inline SVG elements. Due to the number of
-      elements, ServerStyleSheet.interleaveWithNodeStream will create multiple
-      stylesheets.
-    </p>
-    {[...Array(120)].map((x, i) => (
-      <Circle key={i} />
-    ))}
-
-    <Box>
-      <p>Text in this box should be underlined.</p>
-      <p>
-        The underline disappears because the stylesheet is inserted as a child
-        of an SVG.
-      </p>
-      <p>
-        This means its styles are encoded incorrectly when read from the DOM
-        during hydration.
-      </p>
-    </Box>
-  </>
+  <Html title="Hello">
+    <p>This page is streamed with ReactDOM.renderToPipeableStream.</p>
+    <Counter />
+    <section className="comments">
+      <h2>Comments</h2>
+      <Suspense fallback={<div>Loading...</div>}>
+        <Comments />
+      </Suspense>
+    </section>
+  </Html>
 );

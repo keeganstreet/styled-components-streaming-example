@@ -1,4 +1,4 @@
-import { hydrate } from "react-dom";
+import { hydrateRoot } from "react-dom/client";
 import { App } from "../app";
 
-hydrate(<App />, document.getElementById("app"));
+hydrateRoot(document, <App />);

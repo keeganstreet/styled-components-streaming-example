@@ -1,4 +1,5 @@
 import path from "path";
+import { Writable } from "stream";
 import express from "express";
 import { renderToPipeableStream } from "react-dom/server";
 import { ABORT_DELAY, API_DELAY, JS_BUNDLE_DELAY } from "./delays";
@@ -27,7 +28,21 @@ app.get("/", (req, res) => {
   });
   let didError = false;
   const data = createServerData();
-  const stream = renderToPipeableStream(
+
+  const stream = new Writable({
+    write(chunk, _encoding, cb) {
+      res.write(chunk, cb);
+    },
+    final() {
+      const comments = data.read();
+      res.write(`<script>
+        window.ExchangeComments = ${JSON.stringify(comments)};
+      </script>`)
+      res.end("</div></body></html>");
+    },
+  });
+
+  const pipeableStream = renderToPipeableStream(
     <DataProvider data={data}>
       <App />
     </DataProvider>,
@@ -37,17 +52,24 @@ app.get("/", (req, res) => {
         // If something errored before we started streaming, we set the error code appropriately.
         res.statusCode = didError ? 500 : 200;
         res.setHeader("Content-type", "text/html");
-        stream.pipe(res);
+        res.write(`<html>
+          <head>
+            <title>Test</title>
+          </head>
+          <body>
+          <div id="app">`
+        );
+        pipeableStream.pipe(stream);
       },
       onError(x) {
         didError = true;
         console.error(x);
-      },
+      }
     }
   );
   // Abandon and switch to client rendering if enough time passes.
   // Try lowering this to see the client recover.
-  setTimeout(() => stream.abort(), ABORT_DELAY);
+  setTimeout(() => pipeableStream.abort(), ABORT_DELAY);
 });
 
 // Simulate a delay caused by data fetching.
@@ -56,10 +78,16 @@ app.get("/", (req, res) => {
 function createServerData() {
   let done = false;
   let promise = null;
+  const fakeData = [
+    "Wait, it doesn't wait for React to load?",
+    "How does this even work?",
+    "I like marshmallows",
+  ];
+
   return {
     read() {
       if (done) {
-        return;
+        return fakeData;
       }
       if (promise) {
         throw promise;

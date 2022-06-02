@@ -1,10 +1,9 @@
 import { Suspense, lazy } from "react";
-import Html from "./Html";
 import Counter from "./Counter";
 const Comments = lazy(() => import("./Comments" /* webpackPrefetch: true */));
 
 export const App = () => (
-  <Html title="Hello">
+  <>
     <p>This page is streamed with ReactDOM.renderToPipeableStream.</p>
     <Counter />
     <section className="comments">
@@ -13,5 +12,5 @@ export const App = () => (
         <Comments />
       </Suspense>
     </section>
-  </Html>
+  </>
 );

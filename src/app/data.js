@@ -19,20 +19,13 @@ export function DataProvider({ children, data }) {
   return <DataContext.Provider value={data}>{children}</DataContext.Provider>;
 }
 
-// In a real implementation the data would be streamed with the HTML.
-// We haven't integrated this part yet, so we'll just use fake data.
-const fakeData = [
-  "Wait, it doesn't wait for React to load?",
-  "How does this even work?",
-  "I like marshmallows",
-];
-
 export function useData() {
   const ctx = useContext(DataContext);
   if (ctx !== null) {
     // This context is only provided on the server.
     // It is here to simulate a suspending data fetch.
-    ctx.read();
+    return ctx.read();
+  } else if (typeof window === "object") {
+    return window.ExchangeComments;
   }
-  return fakeData;
 }
